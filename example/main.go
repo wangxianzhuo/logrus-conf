@@ -7,5 +7,10 @@ import (
 
 func main() {
 	logconf.Configure()
+	logconf.Configurations()
+
+	s := logconf.Server(1)
+	s.Start(":9090")
+
 	log.Infof("log file path: %s, line break: %s, segment interval: %d, file name pattern: %s, level: %s", *logconf.FilePath, *logconf.LineBreak, *logconf.SegmentInterval, *logconf.FileNamePattern, *logconf.Level)
 }
