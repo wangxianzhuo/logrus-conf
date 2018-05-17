@@ -12,6 +12,7 @@ dep ensure
 package main
 
 import (
+	"flag"
     log "github.com/sirupsen/logrus"
     "github.com/wangxianzhuo/logrus-conf"
 )
@@ -19,6 +20,7 @@ import (
 func main() {
     // auto configure logrus and it's file system hook
     logconf.Configure()
+    flag.Parse()
 
     // print log configs to stdout
     logconf.Configurations()
