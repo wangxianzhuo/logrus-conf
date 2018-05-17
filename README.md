@@ -18,9 +18,9 @@ import (
 )
 
 func main() {
+    flag.Parse()
     // auto configure logrus and it's file system hook
     logconf.Configure()
-    flag.Parse()
 
     // print log configs to stdout
     logconf.Configurations()
