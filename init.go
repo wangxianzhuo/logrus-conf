@@ -1,7 +1,11 @@
 package logconf
 
 import (
+	"encoding/json"
 	"flag"
+	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/wangxianzhuo/filehook"
@@ -19,8 +23,6 @@ var (
 
 // Configure logrus basic represent, log level and add a file hook
 func Configure() {
-	flag.Parse()
-
 	customFormatter := new(log.TextFormatter)
 	customFormatter.TimestampFormat = "2006-01-02 15:04:05.999999999"
 	customFormatter.FullTimestamp = true
@@ -63,4 +65,21 @@ func LogLevel(level string) {
 	default:
 		log.SetLevel(log.InfoLevel)
 	}
+}
+
+// PrintConfigs print logrus config to io.writer
+func PrintConfigs(w io.Writer) {
+	configs := make(map[string]interface{})
+	configs["log-path"] = *FilePath
+	configs["segment-interval"] = *SegmentInterval
+	configs["file-name-pattern"] = *FileNamePattern
+	configs["level"] = *Level
+	c, _ := json.Marshal(configs)
+	fmt.Fprintf(w, "%v", string(c))
+}
+
+// Configurations print logrus configs to stdout
+func Configurations() {
+	PrintConfigs(os.Stdout)
+	fmt.Fprint(os.Stdout, "\n")
 }
