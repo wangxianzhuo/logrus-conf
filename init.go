@@ -19,6 +19,7 @@ var (
 	SegmentInterval = flag.Int64("segment-interval", 86400, "file segment interval")
 	FileNamePattern = flag.String("file-name-pattern", "%YY-%MM-%DD_%HH-%mm-%SS.log", "log file name pattern")
 	Level           = flag.String("level", "info", "log level, can be: info, warn, debug, error, fatal, panic")
+	Debug           = flag.Bool("debug", false, "debug mode")
 )
 
 // Configure logrus basic represent, log level and add a file hook
@@ -29,6 +30,9 @@ func Configure() {
 	log.SetFormatter(customFormatter)
 
 	LogLevel(*Level)
+	if *Debug {
+		log.SetLevel(log.DebugLevel)
+	}
 
 	h, err := filehook.New(&filehook.Option{
 		Path:            *FilePath,
