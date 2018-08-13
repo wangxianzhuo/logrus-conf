@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/tracer0tong/kafkalogrus"
 	"github.com/wangxianzhuo/filehook"
 
 	log "github.com/sirupsen/logrus"
@@ -20,32 +21,35 @@ var (
 	FileNamePattern = flag.String("file-name-pattern", "%YY-%MM-%DD_%HH-%mm-%SS.log", "log file name pattern")
 	Level           = flag.String("level", "info", "log level, can be: info, warn, debug, error, fatal, panic")
 	Debug           = flag.Bool("debug", false, "debug mode")
+	KafkaTopic      = flag.String("log-kafka-topic", "log_msg", "kafka topic for log")
+	KafkaBrokers    = flag.String("log-kafka-brokers", "localhost:9092", "kafka brokers for log, it can be like '192.168.1.100:9092,192.168.1.101:9092'")
 )
 
-// Configure logrus basic represent, log level and add a file hook
-func Configure() {
+func defalutFormatter() log.Formatter {
 	customFormatter := new(log.TextFormatter)
 	customFormatter.TimestampFormat = "2006-01-02 15:04:05.999999999"
 	customFormatter.FullTimestamp = true
-	log.SetFormatter(customFormatter)
+	return customFormatter
+}
+
+func defalutJSONFormatter() log.Formatter {
+	customFormatter := new(log.JSONFormatter)
+	customFormatter.TimestampFormat = "2006-01-02 15:04:05.999999999"
+	return customFormatter
+}
+
+// Configure logrus basic represent, log level and add a file hook
+func Configure() {
+	log.SetFormatter(defalutFormatter())
 
 	LogLevel(*Level)
 	if *Debug {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	h, err := filehook.New(&filehook.Option{
-		Path:            *FilePath,
-		SegmentInterval: *SegmentInterval,
-		NamePattern:     *FileNamePattern,
-		LineBreak:       *LineBreak,
-	})
+	ConfigureLocalFileHook()
 
-	if err != nil {
-		panic(err)
-	}
-
-	log.AddHook(h)
+	ConfigureKafkaHook()
 }
 
 // CustomFormatConifgure ...
@@ -86,4 +90,60 @@ func PrintConfigs(w io.Writer) {
 func Configurations() {
 	PrintConfigs(os.Stdout)
 	fmt.Fprint(os.Stdout, "\n")
+}
+
+// ConfigureKafkaHook config kafka hook for logrus
+func ConfigureKafkaHook() {
+	if *KafkaTopic == "" {
+		fmt.Println("Error: --log-kafka-topic can't be empty")
+		flag.PrintDefaults()
+		os.Exit(2)
+	}
+	if *KafkaTopic == "" {
+		fmt.Println("Error: --log-kafka-brokers can't be empty")
+		flag.PrintDefaults()
+		os.Exit(2)
+	}
+	l := strings.Split(*KafkaBrokers, ",")
+	if len(l) < 1 {
+		fmt.Println("Error: --log-kafka-brokers can't be empty")
+		flag.PrintDefaults()
+		os.Exit(2)
+	}
+
+	var brokers []string
+
+	for _, i := range l {
+		brokers = append(brokers, strings.TrimSpace(i))
+	}
+
+	hook, err := kafkalogrus.NewKafkaLogrusHook(
+		"kh",
+		log.AllLevels,
+		defalutJSONFormatter(),
+		brokers,
+		*KafkaTopic,
+		true, nil)
+
+	if err != nil {
+		panic(err)
+	}
+
+	log.AddHook(hook)
+}
+
+// ConfigureLocalFileHook config local file system hook for logrus
+func ConfigureLocalFileHook() {
+	h, err := filehook.New(&filehook.Option{
+		Path:            *FilePath,
+		SegmentInterval: *SegmentInterval,
+		NamePattern:     *FileNamePattern,
+		LineBreak:       *LineBreak,
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	log.AddHook(h)
 }
