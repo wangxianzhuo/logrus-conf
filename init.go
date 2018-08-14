@@ -47,9 +47,9 @@ func Configure() {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	ConfigureLocalFileHook()
+	// ConfigureLocalFileHook()
 
-	ConfigureKafkaHook()
+	// ConfigureKafkaHook()
 }
 
 // CustomFormatConifgure ...
