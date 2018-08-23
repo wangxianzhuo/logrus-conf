@@ -23,6 +23,8 @@ var (
 	Debug           = flag.Bool("debug", false, "debug mode")
 	KafkaTopic      = flag.String("log-kafka-topic", "log_msg", "kafka topic for log")
 	KafkaBrokers    = flag.String("log-kafka-brokers", "localhost:9092", "kafka brokers for log, it can be like '192.168.1.100:9092,192.168.1.101:9092'")
+	ToFileSystem    = flag.Bool("to-file-sys", false, "switch of sending log to local file system")
+	ToKafka         = flag.Bool("to-kafka", false, "switch of sending log to kafka")
 )
 
 func defalutFormatter() log.Formatter {
@@ -94,6 +96,9 @@ func Configurations() {
 
 // ConfigureKafkaHook config kafka hook for logrus
 func ConfigureKafkaHook() {
+	if !*ToKafka {
+		return
+	}
 	if *KafkaTopic == "" {
 		fmt.Println("Error: --log-kafka-topic can't be empty")
 		flag.PrintDefaults()
@@ -134,6 +139,9 @@ func ConfigureKafkaHook() {
 
 // ConfigureLocalFileHook config local file system hook for logrus
 func ConfigureLocalFileHook() {
+	if !*ToFileSystem {
+		return
+	}
 	h, err := filehook.New(&filehook.Option{
 		Path:            *FilePath,
 		SegmentInterval: *SegmentInterval,
