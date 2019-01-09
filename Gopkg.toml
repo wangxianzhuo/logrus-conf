@@ -27,15 +27,15 @@
 
 [[constraint]]
   name = "github.com/sirupsen/logrus"
-  version = "=v1.0.5"
+  version = "v1.3.0"
 
 [[constraint]]
   name = "github.com/wangxianzhuo/filehook"
-  version = "=v0.0.5"
+  version = "v0.0.5"
 
 [[constraint]]
   name = "github.com/labstack/echo"
-  version = "3.3.5"
+  version = "3.3.8"
 
 [prune]
   go-tests = true
